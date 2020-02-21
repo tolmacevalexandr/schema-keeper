@@ -58,7 +58,8 @@ class PSQLClient
     {
         $this->putPassword();
 
-        $req = "echo " . escapeshellarg($command) . " | ".$this->generateScript();
+        //$req = "echo " . escapeshellarg($command) . " | ".$this->generateScript(); // failed on Windows
+        $req = $this->generateScript() . ' -c ' . escapeshellarg($command);
 
         return shell_exec($req);
     }
@@ -78,8 +79,10 @@ class PSQLClient
 
         $results = [];
 
-        if (count($commands) > 500) {
-            $parts = array_chunk($commands, 500, true);
+        $max_commands_cnt =  (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 100 : 500;
+
+        if (count($commands) > $max_commands_cnt) {
+            $parts = array_chunk($commands, $max_commands_cnt, true);
 
             foreach ($parts as $part) {
                 $results = array_merge($results, $this->runMultiple($part));
