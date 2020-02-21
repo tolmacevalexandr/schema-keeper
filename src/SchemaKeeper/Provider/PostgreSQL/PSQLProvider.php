@@ -179,6 +179,7 @@ class PSQLProvider implements IProvider
             JOIN pg_catalog.pg_proc p
             ON p.pronamespace = n.oid
             WHERE %s
+              AND p.prokind != 'a' -- aggregate functions is not supported
             ORDER BY pro_path
         ", $this->expandLike('n.nspname', $this->skippedSchemaNames));
 
@@ -211,6 +212,7 @@ class PSQLProvider implements IProvider
                                   FROM pg_catalog.pg_type el
                                   WHERE el.oid = t.typelem AND el.typarray = t.oid)
                    AND %s
+                   AND t.typtype != 'b' -- binary types is not supported
               ORDER BY type_path
         ", $this->expandLike('n.nspname', $this->skippedSchemaNames));
 
