@@ -62,8 +62,18 @@ class FilesystemHelper
 
     public function rmDirIfExisted(string $path): void
     {
-        if ($this->isDir($path)) {
-            shell_exec("rm -rf ".escapeshellarg($path));
+        if (is_dir($path)) {
+            $objects = scandir($path);
+            foreach ($objects as $object) {
+                if ($object != "." && $object != "..") {
+                    if (is_dir($path . DIRECTORY_SEPARATOR . $object) && !is_link($path . DIRECTORY_SEPARATOR . $object)) {
+                        $this->rmDirIfExisted($path . DIRECTORY_SEPARATOR . $object);
+                    } else {
+                        unlink($path . DIRECTORY_SEPARATOR . $object);
+                    }
+                }
+            }
+            rmdir($path);
         }
     }
 }
